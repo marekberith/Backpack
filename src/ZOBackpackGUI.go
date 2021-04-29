@@ -7,15 +7,15 @@ import (
 )
 
 var (
-	mainWindow *widgets.QWidget
-	mainLayout *widgets.QVBoxLayout
-	resultLayout *widgets.QHBoxLayout
-	vectorLine *widgets.QLineEdit
-	weightLine *widgets.QLineEdit
-	itemsCount *widgets.QLineEdit
+	mainWindow      *widgets.QWidget
+	mainLayout      *widgets.QVBoxLayout
+	resultLayout    *widgets.QHBoxLayout
+	vectorLine      *widgets.QLineEdit
+	weightLine      *widgets.QLineEdit
+	itemsCount      *widgets.QLineEdit
 	calculateMatrix *widgets.QPushButton
-	table *widgets.QTableWidget
-	result *widgets.QLabel
+	table           *widgets.QTableWidget
+	result          *widgets.QLabel
 )
 
 func setTable(matrix zo.Matrix, weight int) {
@@ -32,7 +32,7 @@ func setTable(matrix zo.Matrix, weight int) {
 			if j == 0 {
 				continue
 			}
-			table.SetItem(i - 1, j - 1, widgets.NewQTableWidgetItem2(strconv.Itoa(column.Value), 0))
+			table.SetItem(i-1, j-1, widgets.NewQTableWidgetItem2(strconv.Itoa(column.Value), 0))
 		}
 	}
 }
@@ -45,7 +45,7 @@ func setLayout() {
 
 	mainLayout = widgets.NewQVBoxLayout()
 	vectorLine = widgets.NewQLineEdit(nil)
-	vectorLine.SetPlaceholderText("Insert tuples (price, weight), that represent elements added into backpack.")
+	vectorLine.SetPlaceholderText("Insert tuples (price, weight), separated by a semicolon, that represent elements added into backpack.")
 	weightLine = widgets.NewQLineEdit(nil)
 	weightLine.SetPlaceholderText("Insert maximum weight of backpack.")
 	itemsCount = widgets.NewQLineEdit(nil)
