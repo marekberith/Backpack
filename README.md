@@ -6,7 +6,9 @@ ZeroOneBackpack is a GoLang app used to calculate the maximum value of a backpac
 Example of an input:
 
 (1, 1); (2, 2); (4, 3); (4, 4); (5, 5) //items added into the backpack(price, weight)
+
 10 //maximum weight of the backpack
+
 5 //number of items
 
 Output:
