@@ -1,7 +1,7 @@
-# ZeroOneBackpack
-0-1 Backpack Calculator in Golang + QT
+# Backpack
+Backpack Calculator in Golang + QT
 
-ZeroOneBackpack is a GoLang app used to calculate the maximum value of a backpack.
+Backpack is a GoLang app used to calculate the maximum value of a backpack.
 
 Example of an input:
 

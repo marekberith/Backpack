@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./zo"
+	"./bp"
 	"github.com/therecipe/qt/widgets"
 	"strconv"
 )
@@ -13,12 +13,13 @@ var (
 	vectorLine      *widgets.QLineEdit
 	weightLine      *widgets.QLineEdit
 	itemsCount      *widgets.QLineEdit
-	calculateMatrix *widgets.QPushButton
+	algorithmPicker *widgets.QComboBox
+	calculateResult *widgets.QPushButton
 	table           *widgets.QTableWidget
 	result          *widgets.QLabel
 )
 
-func setTable(matrix zo.Matrix, weight int) {
+func setTable(matrix bp.TwoDimMatrix, weight int) {
 	if matrix == nil {
 		return
 	}
@@ -37,9 +38,20 @@ func setTable(matrix zo.Matrix, weight int) {
 	}
 }
 
+func setTableOneDim(matrix bp.Vector) {
+	if matrix == nil {
+		return
+	}
+	table.SetRowCount(1)
+	table.SetColumnCount(len(matrix))
+	for i, column := range matrix {
+		table.SetItem(0, i, widgets.NewQTableWidgetItem2(strconv.Itoa(column.Value), 0))
+	}
+}
+
 func setLayout() {
 	mainWindow = widgets.NewQWidget(nil, 0)
-	mainWindow.SetWindowTitle("Zero-One Backpack Calculator")
+	mainWindow.SetWindowTitle("Backpack Calculator")
 	mainWindow.SetMinimumWidth(500)
 	mainWindow.SetMinimumHeight(400)
 
@@ -56,20 +68,31 @@ func setLayout() {
 	table = widgets.NewQTableWidget(nil)
 	table.HorizontalHeader().SetSectionResizeMode(widgets.QHeaderView__Stretch)
 	table.SetEditTriggers(widgets.QAbstractItemView__NoEditTriggers)
-	calculateMatrix = widgets.NewQPushButton(nil)
-	calculateMatrix.SetText("Calculate matrix")
-	calculateMatrix.ConnectClicked(func(checked bool) {
+	calculateResult = widgets.NewQPushButton(nil)
+	calculateResult.SetText("Calculate matrix")
+	calculateResult.ConnectClicked(func(checked bool) {
 		weight, _ := strconv.Atoi(weightLine.Text())
 		itemsCnt, _ := strconv.Atoi(itemsCount.Text())
-		matrix, resultText := zo.GetZeroOneMatrix(vectorLine.Text(), weight, itemsCnt)
-		result.SetText(resultText)
-		setTable(matrix, weight)
+		if algorithmPicker.CurrentText() == "Zero-One Backpack" {
+			matrix, resultText := bp.SolveZeroOneBackpack(vectorLine.Text(), weight, itemsCnt)
+			setTable(matrix, weight)
+			result.SetText(resultText)
+		} else if algorithmPicker.CurrentText() == "Unbounded backpack" {
+			matrix, resultText := bp.SolveUnboundedBackpack(vectorLine.Text(), weight, itemsCnt)
+			setTableOneDim(matrix)
+			result.SetText(resultText)
+		}
 	})
+
+	algorithmPicker = widgets.NewQComboBox(nil)
+	comboBoxOptions := []string{"Zero-One Backpack", "Unbounded backpack"}
+	algorithmPicker.AddItems(comboBoxOptions)
 
 	mainLayout.AddWidget(vectorLine, 0, 0)
 	mainLayout.AddWidget(weightLine, 0, 0)
 	mainLayout.AddWidget(itemsCount, 0, 0)
-	mainLayout.AddWidget(calculateMatrix, 0, 0)
+	mainLayout.AddWidget(algorithmPicker, 0, 0)
+	mainLayout.AddWidget(calculateResult, 0, 0)
 	resultLayout = widgets.NewQHBoxLayout()
 	resultLayout.AddStretch(1)
 	resultLayout.AddWidget(result, 0, 0)

@@ -1,4 +1,4 @@
-package zo
+package bp
 
 import (
 	"errors"
@@ -11,12 +11,13 @@ type Pair struct {
 	price, weight int
 }
 
-type MatrixValue struct {
-	Value int
-	from  *Pair
+type TwoDimMatrixValue struct {
+	Value    int
+	from     *Pair
+	included bool
 }
 
-func parseMatrix(tuples string, weight, itemsCount int) ([][]MatrixValue, []Pair, error) {
+func parseMatrix(tuples string, weight, itemsCount int) ([][]TwoDimMatrixValue, []Pair, error) {
 	tuples = strings.Replace(tuples, " ", "", -1)
 	splittedTuples := strings.Split(tuples, ";")
 	if weight < 0 {
@@ -26,9 +27,9 @@ func parseMatrix(tuples string, weight, itemsCount int) ([][]MatrixValue, []Pair
 		return nil, nil, errors.New("too few/many tuples entered")
 	}
 	pairs := make([]Pair, len(splittedTuples))
-	matrix := make([][]MatrixValue, len(splittedTuples)+1)
+	matrix := make([][]TwoDimMatrixValue, len(splittedTuples)+1)
 	for i, raw := range splittedTuples {
-		matrix[i] = make([]MatrixValue, weight+1)
+		matrix[i] = make([]TwoDimMatrixValue, weight+1)
 		if !(raw[0] == '(' && raw[len(raw)-1] == ')') {
 			return nil, nil, errors.New("invalid data")
 		}
@@ -37,34 +38,34 @@ func parseMatrix(tuples string, weight, itemsCount int) ([][]MatrixValue, []Pair
 			return nil, nil, errors.New("invalid data")
 		}
 	}
-	matrix[len(splittedTuples)] = make([]MatrixValue, weight+1)
+	matrix[len(splittedTuples)] = make([]TwoDimMatrixValue, weight+1)
 	return matrix, pairs, nil
 }
 
-func max(fVal, sVal int, fPair, sPair *Pair) (int, *Pair) {
+func max(fVal, sVal int, fPair, sPair *Pair) TwoDimMatrixValue {
 	if fVal > sVal {
-		return fVal, fPair
+		return TwoDimMatrixValue{fVal, fPair, false}
 	}
-	return sVal, sPair
+	return TwoDimMatrixValue{sVal, sPair, true}
 }
 
-type Matrix [][]MatrixValue
+type TwoDimMatrix [][]TwoDimMatrixValue
 
-func (m Matrix) get(i, j, price int) int {
+func (m TwoDimMatrix) get(i, j, price int) int {
 	if i < 0 || j < 0 {
 		return -1
 	}
 	return m[i][j].Value + price
 }
 
-func calculateMatrix(matrix [][]MatrixValue, pairs []Pair, weight int) ([][]MatrixValue, *MatrixValue, *Pair) {
+func calculateMatrix(matrix [][]TwoDimMatrixValue, pairs []Pair, weight int) ([][]TwoDimMatrixValue, *TwoDimMatrixValue, *Pair) {
 	entriesCount := len(matrix)
-	var maxValue *MatrixValue
+	var maxValue *TwoDimMatrixValue
 	var maxPair *Pair
 	for i := 1; i < entriesCount; i++ {
 		for j := 1; j < weight+1; j++ {
 			weightWithout := j - pairs[i-1].weight
-			matrix[i][j].Value, matrix[i][j].from = max(Matrix(matrix).get(i-1, j, 0), Matrix(matrix).get(i-1, weightWithout, pairs[i-1].price), &Pair{i - 1, j}, &Pair{i - 1, weightWithout})
+			matrix[i][j] = max(TwoDimMatrix(matrix).get(i-1, j, 0), TwoDimMatrix(matrix).get(i-1, weightWithout, pairs[i-1].price), &Pair{i - 1, j}, &Pair{i - 1, weightWithout})
 			if maxValue == nil || maxValue.Value < matrix[i][j].Value {
 				maxValue = &matrix[i][j]
 				maxPair = &Pair{i, j}
@@ -74,29 +75,33 @@ func calculateMatrix(matrix [][]MatrixValue, pairs []Pair, weight int) ([][]Matr
 	return matrix, maxValue, maxPair
 }
 
-func getResult(matrix Matrix, previous *MatrixValue, previousPair *Pair) (Matrix, string) {
+func getZOBackpackResult(matrix TwoDimMatrix, previous *TwoDimMatrixValue, previousPair *Pair) (TwoDimMatrix, string) {
 	if previousPair == nil {
 		return nil, "No solution exists"
 	}
 	result := "One of the solutions: ("
 	for previous != nil && previousPair != nil {
-		result += "(" + strconv.Itoa(previousPair.price) + ", " + strconv.Itoa(previousPair.weight) + ")"
+		if previous.included == true {
+			result += "(" + strconv.Itoa(previousPair.price) + ", " + strconv.Itoa(previousPair.weight) + ")"
+		}
 		previousPair = previous.from
 		if previousPair == nil || previousPair.price == 0 || previousPair.weight == 0 {
 			break
 		}
-		result += ", "
+		if previous.included == true {
+			result += ", "
+		}
 		previous = &matrix[previousPair.price][previousPair.weight]
 	}
 	result += ")"
 	return matrix, result
 }
 
-func GetZeroOneMatrix(tuples string, weight, itemsCount int) (Matrix, string) {
+func SolveZeroOneBackpack(tuples string, weight, itemsCount int) (TwoDimMatrix, string) {
 	emptyMatrix, pairs, err := parseMatrix(tuples, weight, itemsCount)
 	if err != nil {
 		return nil, fmt.Sprintf("%s", err)
 	}
 	matrix, maxValue, maxPair := calculateMatrix(emptyMatrix, pairs, weight)
-	return getResult(matrix, maxValue, maxPair)
+	return getZOBackpackResult(matrix, maxValue, maxPair)
 }
