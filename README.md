@@ -18,7 +18,7 @@ Output:
 
 ## How to use?
 
-You can either build the app or use the Windows binary(will be added in few days).
+You can either build the app or use the Windows binary(will be updated!).
 
 If you want to build the app, you'll need to install GO and the qt binding into your GO root. Please, use the following package: https://github.com/therecipe/qt.
 Then clone the repository, open the src folder and build the app using the following command:
